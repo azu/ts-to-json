@@ -110,7 +110,7 @@ function generateDocumentation(fileNames: string[], options: ts.CompilerOptions)
     }
 
     // print out the doc
-    console.log(output);
+    console.log(JSON.stringify(output, null, 2));
 
     return;
 

@@ -1,0 +1,49 @@
+{
+  "name": "ts-to-json",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/azu/ts-to-json",
+  "bugs": {
+    "url": "https://github.com/azu/ts-to-json/issues"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/azu/ts-to-json.git"
+  },
+  "license": "MIT",
+  "author": "azu",
+  "main": "lib/ts-to-json.js",
+  "types": "lib/ts-to-json.d.ts",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "src/"
+  ],
+  "scripts": {
+    "test": "tsx src/parse.ts"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,css}": [
+      "prettier --write"
+    ]
+  },
+  "prettier": {
+    "printWidth": 120,
+    "singleQuote": false,
+    "tabWidth": 4,
+    "trailingComma": "none"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.1",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "yarn@1.22.21"
+}

@@ -22,6 +22,7 @@ export type ExamplePageD = {
     path: "/example-page-d";
     params: {
         id?: string;
+        mustKey: "a" | "b";
     };
 };
 export type Routes = ExamplePageA | ExamplePageB | ExamplePageC | ExamplePageD;

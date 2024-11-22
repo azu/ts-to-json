@@ -82,7 +82,11 @@ function formatType(text: string) {
     text = text.replace(/(\w+)\s{0,10}:\s{0,10}string/g, '"$1": "string"');
     // 3. "a" | "b" | "c" ... を"a"に変換する
     // | を見つけたら次の ; までを取得する、その中で最初の要素を取得する
-    text = text.replace(/(\w+):\s?".+?\|.+?"/g, '"$1": "$2"');
+    text = text.replace(/(?<key>\w+)\s{0,10}?\s{0,10}:\s{0,10}\|?\s{0,10}(?<value>".*\|.+)/g, (_, key, value) => {
+        // valueの | 以降を削除
+        const trimValue = value.replace(/\|.*$/, "");
+        return `"${key}": ${trimValue}`;
+    });
     // 4. optional typeを削除する
     text = text.replace(/(\w+)\?\s{0,10}:\s{0,10}(\w+),/g, "");
     return eval(`(${text})`);

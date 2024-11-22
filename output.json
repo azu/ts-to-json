@@ -20,6 +20,8 @@
   {
     "name": "ExamplePageD",
     "path": "/example-page-d",
-    "params": {}
+    "params": {
+      "mustKey": "a"
+    }
   }
 ]

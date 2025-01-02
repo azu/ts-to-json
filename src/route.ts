@@ -13,7 +13,7 @@ export type ExamplePageC = {
     name: "ExamplePageC";
     path: "/example-page-c";
     params: {
-        id: string;
+        id: "a" | "b" | "c";
     };
 };
 

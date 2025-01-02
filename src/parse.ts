@@ -1,96 +1,55 @@
 import * as ts from "typescript";
 import path from "node:path";
+import { isLiteralTypeNode, isStringLiteral, isTypeLiteralNode, isTypeNode, isUnionTypeNode } from "typescript";
 
-/**
- * typeの定義から、JSとして評価できる文字列を作成する
- *
- *
- * 例: ; を , に変換する
- *
- * {
- *     name: "ExamplePageA";
- *     path: "/example-page-a";
- * }
- * ->
- * {
- *     name: "ExamplePageA",
- *     path: "/example-page-a",
- * }
- * ----
- *
- * 例) stringを"string"に変換する
- *
- * {
- *     name: "ExamplePageB";
- *     path: "/example-page-b";
- *     params: {
- *         id: string;
- *     };
- * }
- * ->
- * {
- *    name: "ExamplePageB",
- *    path: "/example-page-b",
- *    params: {
- *      id: "string"
- *    };
- * }
- * ----
- *
- * 例) union typeを最初の要素に変換する
- *
- * {
- *     name: "ExamplePageC";
- *     path: "/example-page-c";
- *     params: {
- *         id: "a" | "b" | "c";
- *     };
- * }
- * ->
- * {
- *   name: "ExamplePageC",
- *   path: "/example-page-c",
- *   params: {
- *        id: "a"
- *   }
- * }
- * ----
- *
- * 例) optional typeを削除する
- *
- * {
- *     name: "ExamplePageD";
- *     path: "/example-page-d";
- *     params: {
- *       id?: string;
- *     }
- * }
- * ->
- * {
- *    name: "ExamplePageD",
- *    path: "/example-page-d",
- *    params: {
- *
- *    }
- *  }
- * @param text
- */
-function formatType(text: string) {
-    // 1. ; を , に変換する
-    text = text.replace(/;/g, ",");
-    // 2. stringを"string"に変換する
-    text = text.replace(/(\w+)\s{0,10}:\s{0,10}string/g, '"$1": "string"');
-    // 3. "a" | "b" | "c" ... を"a"に変換する
-    // | を見つけたら次の ; までを取得する、その中で最初の要素を取得する
-    text = text.replace(/(?<key>\w+)\s{0,10}?\s{0,10}:\s{0,10}\|?\s{0,10}(?<value>".*\|.+)/g, (_, key, value) => {
-        // valueの | 以降を削除
-        const trimValue = value.replace(/\|.*$/, "");
-        return `"${key}": ${trimValue}`;
+const valueOfNode = (node: ts.Node) => {
+    // LiteralType > StringLiteral
+    if (isLiteralTypeNode(node) && isStringLiteral(node.literal)) {
+        return node.literal.text;
+    }
+    // string keyword
+    if (isTypeNode(node) && node.kind === ts.SyntaxKind.StringKeyword) {
+        return "string";
+    }
+    //  UnionType
+    if (isUnionTypeNode(node)) {
+        return node.types.map((type) => {
+            // is string keyword
+            if (type.kind === ts.SyntaxKind.StringKeyword) {
+                return "string";
+            }
+            if (isLiteralTypeNode(type) && isStringLiteral(type.literal)) {
+                return type.literal.text;
+            }
+            return undefined;
+        });
+    }
+    // TypeLiteral
+    if (isTypeLiteralNode(node)) {
+        return getObjectValueFromTypeLiteral(node as ts.TypeLiteralNode);
+    }
+    return undefined;
+};
+// 再起的にmembersの値を取得して、オブジェクトにする
+// "a" | "b" | "c" は ["a", "b", "c"] に変換する
+// name: "ExamplePageB" は { name: "ExamplePageB" } に変換する
+// params: { id: "string" } は { params: { id: "string" } } に変換する
+const getObjectValueFromTypeLiteral = (node: ts.TypeLiteralNode): Record<string, unknown> => {
+    const members = node.members.map((member) => {
+        const isOptional = member.questionToken !== undefined;
+        if (isOptional) {
+            return undefined;
+        }
+        return {
+            name: member.name?.getText(),
+            // @ts-expect-error -- type
+            value: valueOfNode(member.type) as string | string[] | Record<string, string> | undefined
+        };
     });
-    // 4. optional typeを削除する
-    text = text.replace(/(\w+)\?\s{0,10}:\s{0,10}(\w+),/g, "");
-    return eval(`(${text})`);
-}
+    return Object.fromEntries(
+        members.filter((member) => member !== undefined).map((member) => [member.name, member.value])
+    );
+};
 
 /** Generate documentation for all classes in a set of .ts files */
 function generateDocumentation(fileNames: string[], options: ts.CompilerOptions): void {
@@ -128,7 +87,9 @@ function generateDocumentation(fileNames: string[], options: ts.CompilerOptions)
                     const typeLiteral = (<ts.TypeAliasDeclaration>node).type;
                     // unionは除外
                     if (typeLiteral.kind === ts.SyntaxKind.TypeLiteral) {
-                        output.push(formatType(typeLiteral.getText()));
+                        const result = getObjectValueFromTypeLiteral(typeLiteral as ts.TypeLiteralNode);
+                        console.log(result);
+                        // output.push(formatType(typeLiteral.getText()));
                     }
                 }
             }

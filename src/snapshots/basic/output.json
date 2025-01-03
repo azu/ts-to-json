@@ -1,0 +1,25 @@
+[
+  {
+    "name": "ExamplePageA",
+    "path": "/example-page-a"
+  },
+  {
+    "name": "ExamplePageB",
+    "path": "/example-page-b",
+    "params": {
+      "id": "string"
+    }
+  },
+  {
+    "name": "ExamplePageC",
+    "path": "/example-page-c",
+    "params": {
+      "id": "a"
+    }
+  },
+  {
+    "name": "ExamplePageD",
+    "path": "/example-page-d",
+    "params": {}
+  }
+]

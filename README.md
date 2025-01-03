@@ -2,27 +2,62 @@
 
 TypeScript `type` definition to JS
 
-## Install
+## Usage
 
 Install with [npm](https://www.npmjs.com/package/ts-to-json):
 
     npm ci
     npm test
 
-```js
+```ts
+export type OptionalPageA = {
+    name: "OptionalPageA";
+    path: "/example-page-a";
+    params: {
+        /**
+         * @example "123"
+         */
+        id?: string;
+        /**
+         * @example "abc"
+         */
+        name?: string;
+    };
+};
+export type ExamplePageB = {
+    name: "ExamplePageB";
+    path: "/example-page-b";
+    params: {
+        /**
+         * @example "123"
+         */
+        id: string;
+        /**
+         * @example "abc"
+         */
+        name: string;
+    };
+};
+export type Routes = OptionalPageA | ExamplePageB;
+```
+
+->
+
+```json
 [
-  { name: 'ExamplePageA', path: '/example-page-a' },
   {
-    name: 'ExamplePageB',
-    path: '/example-page-b',
-    params: { id: 'string' }
+    "name": "OptionalPageA",
+    "path": "/example-page-a",
+    "params": {}
   },
   {
-    name: 'ExamplePageC',
-    path: '/example-page-c',
-    params: { id: 'string' }
-  },
-  { name: 'ExamplePageD', path: '/example-page-d', params: {} }
+    "name": "ExamplePageB",
+    "path": "/example-page-b",
+    "params": {
+      "id": "123",
+      "name": "abc"
+    }
+  }
 ]
 ```
 
